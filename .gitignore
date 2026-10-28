@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+.venv/
+dist/
+backups/
+private/
+fixtures/
+*.asar
+*.exe
+*.dmg
+*.app/
+*.zip
+*.bin
+settings.json
+node_modules/
