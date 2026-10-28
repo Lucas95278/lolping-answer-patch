@@ -1,0 +1,35 @@
+name: Verify patch
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  unit:
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+        python: ['3.9', '3.13']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m unittest discover -s tests -v
+      - run: python -m lolping_patch --help
+      - run: python tools/build_release.py
+  windows-bundle:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - run: python tools/fetch_windows_fixture.py
+      - run: python tools/check_bundle.py fixtures/windows/app/resources/app.asar
+      - run: python tools/smoke_windows.py fixtures/windows/app
