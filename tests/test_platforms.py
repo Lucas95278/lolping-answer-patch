@@ -1,4 +1,7 @@
 import plistlib
+import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -9,6 +12,20 @@ from lolping_patch.platforms import discover, ensure_stopped
 
 
 class PlatformTests(unittest.TestCase):
+    def test_bilingual_cli_help_works_with_legacy_output_encoding(self):
+        result = subprocess.run([sys.executable, '-m', 'lolping_patch', '--help'],
+                                capture_output=True, env=dict(os.environ, PYTHONIOENCODING='cp1252'))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('最终答案补丁', result.stdout.decode('utf-8'))
+
+    def test_bilingual_cli_errors_works_with_legacy_output_encoding(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            result = subprocess.run([sys.executable, '-m', 'lolping_patch', 'status', '--app',
+                                     str(Path(temporary) / 'missing-lolPing')], capture_output=True,
+                                    env=dict(os.environ, PYTHONIOENCODING='cp1252'))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('错误', result.stderr.decode('utf-8'))
+
     def test_official_mac_layout_accepts_inactive_integrity_metadata(self):
         with tempfile.TemporaryDirectory() as temporary:
             app = Path(temporary) / 'lolPing.app'

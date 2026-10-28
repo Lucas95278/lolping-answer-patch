@@ -9,6 +9,11 @@ from .platforms import discover, default_paths
 
 
 def main(argv=None):
+    # Windows redirected output can default to cp1252; bilingual messages must
+    # not make an otherwise successful installation exit with an encoding error.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, 'reconfigure'):
+            stream.reconfigure(encoding='utf-8', errors='backslashreplace')
     parser = argparse.ArgumentParser(description='lolPing 0.6.0 final-answer patch / 最终答案补丁')
     parser.add_argument('command', choices=['apply', 'status', 'restore'])
     parser.add_argument('--app', help='lolPing.app, Windows installation directory, or lolPing.exe')
